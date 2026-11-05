@@ -6,6 +6,8 @@ A private, single-owner document scanning and enhancement platform inspired by C
 
 ## PDF / Cloudflare Tunnel quickstart
 
+> **Cloudflare deploy note:** This repository is a full-stack Python + Next.js application, not a Cloudflare Worker. Do **not** deploy it with `npx wrangler deploy`; that causes “Could not detect a directory containing static files”. Use Cloudflare Tunnel in front of the Docker deployment instead. See [docs/CLOUDFLARE_BUILD_ERROR.md](docs/CLOUDFLARE_BUILD_ERROR.md).
+
 This repository contains the full OmniFix Private Scanner source. To run it as a private PDF scanner behind Cloudflare Tunnel:
 
 ```bash
