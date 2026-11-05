@@ -4,6 +4,51 @@ A private, single-owner document scanning and enhancement platform inspired by C
 
 > **Important:** CamScanner’s OmniFix is proprietary. This project implements an independent OpenCV/Pillow/NumPy pipeline inspired by its visual goals. It does not copy proprietary code or claim algorithmic equivalence.
 
+## PDF / Cloudflare Tunnel quickstart
+
+This repository contains the full OmniFix Private Scanner source. To run it as a private PDF scanner behind Cloudflare Tunnel:
+
+```bash
+git clone https://github.com/EhabYT/PDF.git
+cd PDF
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+ENVIRONMENT=production
+SESSION_SECRET=<random-64-hex-secret>
+COOKIE_SECURE=true
+TRUSTED_HOSTS=scanner.yourdomain.com,localhost,127.0.0.1
+ALLOWED_ORIGINS=https://scanner.yourdomain.com
+BIND_ADDRESS=127.0.0.1
+HTTP_PORT=8080
+TUNNEL_TOKEN=<your-cloudflare-tunnel-token>
+```
+
+Generate the secret:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+In Cloudflare Zero Trust, create a tunnel and point the public hostname to the internal Docker service:
+
+```text
+Hostname: scanner.yourdomain.com
+Service:  http://nginx:8080
+```
+
+Protect that hostname with a Cloudflare Access self-hosted application that allows only your email/IdP group. Then start the stack and create the owner:
+
+```bash
+docker compose -f docker-compose.yml -f deployment/cloudflare/docker-compose.cloudflare.yml up -d --build
+docker compose exec api python -m app.bootstrap --username owner
+```
+
+Open `https://scanner.yourdomain.com`, pass Cloudflare Access, then sign in to OmniFix. Full tunnel guidance: [docs/CLOUDFLARE_TUNNEL.md](docs/CLOUDFLARE_TUNNEL.md).
+
 ## What is included
 
 - Next.js 16 + TypeScript + Tailwind responsive PWA (light/dark/system themes).
