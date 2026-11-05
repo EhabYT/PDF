@@ -1,0 +1,2 @@
+import { defineConfig, devices } from '@playwright/test';
+export default defineConfig({ testDir: './tests/e2e', timeout: 90000, expect: { timeout: 20000 }, fullyParallel: false, workers: 1, use: { baseURL: process.env.BASE_URL || 'http://127.0.0.1:8000', trace: 'retain-on-failure', screenshot: 'only-on-failure' }, projects: [{ name: 'desktop-chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } } }, { name: 'mobile-chromium', use: { ...devices['Pixel 5'] } }] });

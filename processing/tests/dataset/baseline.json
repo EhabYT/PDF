@@ -1,0 +1,82 @@
+{
+  "colored_stamps.png": {
+    "sha256": "b95b1e27db4cecbbbde457bab546fc8cd5df54bb597921b5483488a0d799106e",
+    "shape": [
+      900,
+      700,
+      3
+    ],
+    "mean": 244.858,
+    "std": 19.995
+  },
+  "faint_handwriting.png": {
+    "sha256": "df72956033ed1f441c74056fbab59b90bf44087e5fc8cc9c1891c2dd7250e84d",
+    "shape": [
+      900,
+      700,
+      3
+    ],
+    "mean": 246.778,
+    "std": 6.562
+  },
+  "normal_document.png": {
+    "sha256": "cd485eec971ee5088e8705bcab6ef5836b6ec7db81e025d65ad52faf38deb21f",
+    "shape": [
+      623,
+      462,
+      3
+    ],
+    "mean": 238.092,
+    "std": 30.719
+  },
+  "shadow_heavy.png": {
+    "sha256": "7230a4d31144219dbc692571903038c61052596731a26c74231c5257459f34d7",
+    "shape": [
+      622,
+      461,
+      3
+    ],
+    "mean": 205.558,
+    "std": 30.647
+  },
+  "signature_document.png": {
+    "sha256": "cd485eec971ee5088e8705bcab6ef5836b6ec7db81e025d65ad52faf38deb21f",
+    "shape": [
+      623,
+      462,
+      3
+    ],
+    "mean": 238.092,
+    "std": 30.719
+  },
+  "small_text_table.png": {
+    "sha256": "56a0ee6d090927ffef5136138f573db4ff87ecce69ebeb351008a6b7f6548ed4",
+    "shape": [
+      678,
+      606,
+      3
+    ],
+    "mean": 226.538,
+    "std": 55.302
+  },
+  "tilted_document.png": {
+    "sha256": "0ef3f47638f11afc74a3ba03a3dff168c612f01afe4d1e9a6b6a6148dc101274",
+    "shape": [
+      646,
+      426,
+      3
+    ],
+    "mean": 238.027,
+    "std": 29.082
+  },
+  "uneven_illumination.png": {
+    "sha256": "ca011bc3f1b4891f50cbf064c7655810be8c81856e295cf91d35b28e9c33c657",
+    "shape": [
+      623,
+      462,
+      3
+    ],
+    "mean": 217.616,
+    "std": 30.83
+  }
+}

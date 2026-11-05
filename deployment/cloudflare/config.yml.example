@@ -1,0 +1,13 @@
+# Optional host-managed cloudflared config (token-based setup is preferred).
+# If you use `cloudflared tunnel run <name>` with a credentials JSON file instead
+# of a token, place the credentials file outside Git and reference it here.
+#
+# tunnel: <TUNNEL_UUID>
+# credentials-file: /etc/cloudflared/<TUNNEL_UUID>.json
+#
+# ingress:
+#   - hostname: scanner.example.com
+#     service: http://127.0.0.1:8080
+#     originRequest:
+#       noTLSVerify: false
+#   - service: http_status:404

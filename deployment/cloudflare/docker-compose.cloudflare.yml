@@ -1,0 +1,27 @@
+# Cloudflare Tunnel override for OmniFix Private Scanner
+#
+# Usage:
+#   1. Create a Cloudflare Tunnel and copy its token.
+#   2. Add TUNNEL_TOKEN to .env.
+#   3. Configure the tunnel public hostname to point to http://nginx:8080.
+#   4. Protect that hostname with a Cloudflare Access self-hosted application.
+#   5. Run:
+#        docker compose -f docker-compose.yml -f deployment/cloudflare/docker-compose.cloudflare.yml up -d --build
+#
+# This keeps the origin bound to loopback only. cloudflared reaches Nginx over
+# the internal Docker network; no inbound public port is opened on the host.
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "run", "--token", "${TUNNEL_TOKEN:?Set TUNNEL_TOKEN in .env}"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Set TUNNEL_TOKEN in .env}
+    depends_on:
+      nginx:
+        condition: service_started
+    mem_limit: 128m
+    security_opt:
+      - no-new-privileges:true
+    # For production, pin the image digest after validating the tunnel:
+    # image: cloudflare/cloudflared@sha256:<digest>
