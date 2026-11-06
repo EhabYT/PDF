@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OmniFix Private Scanner — deployment notice</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0f1117;
+      color: #e8eaf2;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    main {
+      max-width: 720px;
+      background: #171a23;
+      border: 1px solid #2a2f3d;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+    h1 { margin: 0 0 12px; font-size: 1.6rem; }
+    p { line-height: 1.6; color: #c6cbdb; }
+    code, pre {
+      background: #0f1117;
+      border: 1px solid #2a2f3d;
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: .9em;
+    }
+    pre { padding: 14px; overflow: auto; }
+    a { color: #9db4ff; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #2a2f3d;
+      color: #ffd479;
+      font-size: .8rem;
+      margin-bottom: 16px;
+    }
+    ul { line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="badge">Deployment notice</span>
+    <h1>OmniFix Private Scanner is not running here</h1>
+    <p>
+      This Cloudflare Worker only serves a static notice. It is not the OmniFix
+      application. OmniFix is a full-stack private document scanner with a Python
+      FastAPI backend, background worker, OCR, SQLite database and private local
+      file storage. Those components cannot run as a normal Cloudflare Worker.
+    </p>
+    <p>To run the real application:</p>
+    <ul>
+      <li>Deploy the repository with Docker Compose on your own server or PC.</li>
+      <li>Expose it privately using Cloudflare Tunnel and protect it with Cloudflare Access.</li>
+      <li>Disconnect the failing Workers Builds integration if you do not want this notice page deployed.</li>
+    </ul>
+    <pre><code>docker compose -f docker-compose.yml \
+  -f deployment/cloudflare/docker-compose.cloudflare.yml up -d --build
+
+docker compose exec api python -m app.bootstrap --username owner</code></pre>
+    <p>
+      Source and guides:
+      <a href="https://github.com/EhabYT/PDF">github.com/EhabYT/PDF</a>
+      ·
+      <a href="https://github.com/EhabYT/PDF/blob/main/docs/CLOUDFLARE_TUNNEL.md">Cloudflare Tunnel guide</a>
+      ·
+      <a href="https://github.com/EhabYT/PDF/blob/main/docs/CLOUDFLARE_BUILD_ERROR.md">Build error guide</a>
+    </p>
+  </main>
+</body>
+</html>

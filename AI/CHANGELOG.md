@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 — 2026-11-06
+- Added a Cloudflare Workers Builds guard (`wrangler.toml` + static notice Worker) so accidental `npx wrangler deploy` integrations deploy a clear notice instead of failing on missing static assets. The guard is not the OmniFix application; real deployment remains Docker + Cloudflare Tunnel.
+- Verified guard with `wrangler deploy --dry-run` (Wrangler 4.158.0, Node 22).
+
 ## 1.0.1 — 2026-11-06
 - Raised default upload limits: 50 MB per image, 100 MB per PDF, 500 MB per request, 300 pages per document/batch.
 - Updated Nginx upload body limit to 500 MB and proxy timeouts to 600s; raised API container memory limit to 1 GB.

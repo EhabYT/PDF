@@ -83,6 +83,14 @@ Environment variable: NEXT_TELEMETRY_DISABLED=1
 
 Do not use `npx wrangler deploy` for Pages; use Cloudflare Pages deployment. The app’s `/api` calls will fail unless you separately provide a compatible backend and adjust CORS/cookies/origin configuration.
 
+## Repository guard for accidental Workers Builds
+
+The repository now includes a minimal `wrangler.toml` and `cloudflare-worker/` static notice page. If a Cloudflare Workers Builds integration remains connected and runs `npx wrangler deploy`, Wrangler can detect static assets and deploy the notice page instead of failing with “Could not detect a directory containing static files”.
+
+This guard is **not** the OmniFix application. It does not deploy the FastAPI API, processing worker, OCR, database, or private storage. API paths return a clear `501 not_deployed_here` response.
+
+If you do not want the notice page deployed, disconnect Workers Builds in the Cloudflare dashboard.
+
 ## Recommended conclusion
 
 For OmniFix Private Scanner, the supported Cloudflare path is:
