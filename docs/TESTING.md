@@ -12,7 +12,7 @@ OWNER_PASSWORD='...' npm run test:e2e --prefix frontend
 ## Backend / security (`backend/tests`)
 - Auth login/logout/session expiry/revocation, CSRF, cross-origin rejection, rate limits.
 - No public registration; protected endpoints fail closed; IDOR; path traversal; unauthorized downloads.
-- Malicious signature mismatch, unsupported/corrupt/oversized images, invalid PDF.
+- Malicious signature mismatch, unsupported/corrupt/oversized images, invalid PDF, total request size limit, batch page limit.
 - Argon2id password change; TOTP enable/login/recovery codes; security headers.
 - Upload/process/original byte integrity/determinism; multi-page order/rotation/inclusion/corners.
 - PDF import/export page count; ZIP integrity; smart naming/manual override; job cancel/retry/history; deletion; settings/dashboard.

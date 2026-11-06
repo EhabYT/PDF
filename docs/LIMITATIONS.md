@@ -8,7 +8,7 @@
 6. **Multi-frame TIFF/WebP rejected.** Split frames into separate pages or a PDF first.
 7. **Output pixels are not guaranteed identical.** Enhancement/geometry change pixels by design; uploaded sources remain byte-identical.
 8. **Partial UI localization.** Language setting localizes navigation/common controls; some long explanatory text remains English. Document naming supports German/English/Arabic.
-9. **Single-worker throughput.** Concurrency=1 protects memory on a private host; large documents process sequentially. Cancellation is cooperative at page/job boundaries.
+9. **Single-worker throughput.** Concurrency=1 protects memory on a private host; large documents process sequentially. Cancellation is cooperative at page/job boundaries. The raised defaults (50 MB/image, 100 MB/PDF, 500 MB/request, 300 pages) increase worst-case upload/render time and disk usage; lower them in `.env` on small hosts. Cloudflare free/pro plans still cap request bodies at 100 MB.
 10. **A4 fitting margins.** Aspect-ratio-preserving A4 export may add neutral margins; choose original dimensions for edge-to-edge output.
 11. **Local rate limiting.** SQLite throttling is not a distributed WAF; keep the deployment private.
 12. **Retention deletion is explicit.** Automatic document deletion is opt-in and confirmed; backups remain the operator’s responsibility.

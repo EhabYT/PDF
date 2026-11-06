@@ -27,6 +27,9 @@ ALLOWED_ORIGINS=https://scanner.yourdomain.com
 BIND_ADDRESS=127.0.0.1
 HTTP_PORT=8080
 TUNNEL_TOKEN=<your-cloudflare-tunnel-token>
+# Cloudflare free/pro plans cap request bodies at 100 MB:
+MAX_UPLOAD_MB=90
+MAX_PDF_MB=90
 ```
 
 Generate the secret:
@@ -70,7 +73,7 @@ Open `https://scanner.yourdomain.com`, pass Cloudflare Access, then sign in to O
 - Node.js **20.9+** (22 recommended) and npm.
 - Tesseract OCR with `deu`, `eng`, `ara` models and libmagic for local development.
 - Docker + Docker Compose plugin for container deployment.
-- ~2 GB RAM minimum for the default worker limits; more for very large PDFs.
+- ~2 GB RAM minimum; 4 GB recommended for the default 500 MB / 300-page upload limits and large PDFs.
 
 Ubuntu/Debian OCR packages:
 

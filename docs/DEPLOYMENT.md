@@ -34,7 +34,7 @@ See `.env.example`. Important values:
 - `TRUSTED_HOSTS`: exact hostnames; avoid `*` outside development.
 - `ALLOWED_ORIGINS`: empty by default (same-origin only).
 - `BIND_ADDRESS`: 127.0.0.1 default; set explicitly for LAN/VPN interface.
-- Size/page/pixel/worker limits: tune to host RAM.
+- Size/page/pixel/worker limits: tune to host RAM. Defaults are 50 MB/image, 100 MB/PDF, 500 MB/request and 300 pages; the included Nginx upload locations allow 500 MB. Behind Cloudflare free/pro, set `MAX_UPLOAD_MB=90` and `MAX_PDF_MB=90` because Cloudflare caps request bodies at 100 MB.
 
 ## LAN / VPN
 - LAN: set `BIND_ADDRESS` to the LAN interface, firewall to trusted clients only, use strong credentials. HTTP is unencrypted.

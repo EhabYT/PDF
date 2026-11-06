@@ -1,6 +1,6 @@
 # Implementation status — OmniFix Private Scanner
 
-Updated: 2026-11-05
+Updated: 2026-11-06
 
 ## Overall
 Application implemented and running locally in the development sandbox. Core end-to-end workflow verified with real processing and exports. Release candidate for private deployment; external Docker/device validation remains pending.
@@ -17,7 +17,8 @@ Application implemented and running locally in the development sandbox. Core end
 - Phase 9 Delivery: source, docs, scripts and deployment config complete; live preview running.
 
 ## Verified results
-- Backend + engine/visual tests: **42 passed**.
+- Backend + engine/visual tests: **44 passed** (includes raised upload-limit regression tests).
+- Default upload limits raised and verified: 50 MB/image, 100 MB/PDF, 500 MB/request, 300 pages; Nginx upload locations allow 500 MB.
 - Frontend unit tests: **7 passed**.
 - Browser E2E: **2 passed** (desktop Chromium 1440×1000; mobile Chromium Pixel 5) — login, upload, processing, compare, smart naming, PDF export, download, no horizontal overflow.
 - TypeScript: pass. Next.js production build: pass.

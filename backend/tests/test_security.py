@@ -89,6 +89,24 @@ def test_oversized_upload(auth, monkeypatch):
     assert upload(auth, image_bytes() + b"x" * (1024 * 1024), "big.png").status_code == 400
 
 
+def test_total_request_size_limit(auth, monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "max_file_mb", 10)
+    monkeypatch.setattr(settings, "max_upload_mb", 1)
+    response = upload(auth, image_bytes() + b"x" * (1024 * 1024), "big.png")
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "request_too_large"
+
+
+def test_batch_page_limit(auth, monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "max_pages", 2)
+    files = [("files", (f"page-{i}.png", image_bytes(), "image/png")) for i in range(3)]
+    response = auth.post("/api/documents/upload", files=files, data={"combine": "true"})
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] in {"invalid_upload", "too_many_pages"}
+
+
 def test_invalid_pdf(auth):
     assert upload(auth, b"%PDF-1.7\nbroken", "broken.pdf").status_code == 400
 

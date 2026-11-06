@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-11-06
+- Raised default upload limits: 50 MB per image, 100 MB per PDF, 500 MB per request, 300 pages per document/batch.
+- Updated Nginx upload body limit to 500 MB and proxy timeouts to 600s; raised API container memory limit to 1 GB.
+- Updated scan UI batch limit and format hint to 300 pages/files.
+- Documented Cloudflare free/pro 100 MB request-body cap and recommended `MAX_UPLOAD_MB=90` / `MAX_PDF_MB=90` behind Tunnel.
+- Added regression tests for total request size limit and batch page limit. Verified: 44 backend/engine tests, 7 frontend unit tests, TypeScript and production build.
+
 ## 1.0.0 — 2026-11-05
 - Initialized monorepo from an empty workspace.
 - Implemented FastAPI backend, SQLAlchemy/Alembic models, private storage, Argon2id auth, sessions/CSRF/rate limits, optional TOTP.

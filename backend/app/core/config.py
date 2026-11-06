@@ -20,10 +20,10 @@ class Settings(BaseSettings):
     session_idle_minutes: int = 60
     allowed_origins: str = ""
     trusted_hosts: str = "localhost,127.0.0.1,0.0.0.0"
-    max_file_mb: int = 25
-    max_pdf_mb: int = 50
-    max_upload_mb: int = 200
-    max_pages: int = 100
+    max_file_mb: int = 50
+    max_pdf_mb: int = 100
+    max_upload_mb: int = 500
+    max_pages: int = 300
     max_pixels: int = 40_000_000
     max_output_pixels: int = 24_000_000
     pdf_dpi: int = 200

@@ -17,6 +17,9 @@ ALLOWED_ORIGINS=https://scanner.example.com
 BIND_ADDRESS=127.0.0.1
 HTTP_PORT=8080
 TUNNEL_TOKEN=<cloudflare tunnel token>
+# Cloudflare free/pro plans cap request bodies at 100 MB:
+MAX_UPLOAD_MB=90
+MAX_PDF_MB=90
 ```
 
 Replace `scanner.example.com` with your hostname. Keep `BIND_ADDRESS=127.0.0.1` so Nginx is not published on a public interface.
