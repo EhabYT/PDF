@@ -111,6 +111,12 @@ CF_ACCESS_CLIENT_SECRET=<Access service token secret, only if the origin uses Ac
 
 If the origin is protected by Cloudflare Access and the Worker uses a service token, protect the Worker hostname with Cloudflare Access too. Otherwise the Worker becomes a public bypass around the origin's Access policy.
 
+Guided activation from any machine with Node 22+ and authenticated Wrangler:
+
+```bash
+bash scripts/activate-worker-proxy.sh
+```
+
 Proxy mode remains subject to Cloudflare request-body limits. For uploads above the Cloudflare free/pro body cap, use the Tunnel hostname directly instead of the Worker proxy.
 
 ## 4. Verify

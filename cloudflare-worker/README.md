@@ -33,6 +33,14 @@ npx wrangler secret put CF_ACCESS_CLIENT_ID --name pdf
 npx wrangler secret put CF_ACCESS_CLIENT_SECRET --name pdf
 ```
 
+Or use the guided helper (Node 22+, authenticated Wrangler):
+
+```bash
+bash scripts/activate-worker-proxy.sh
+```
+
+It prompts for the origin and optional Access service token, stores them as Worker secrets, deploys, and verifies `/api/health` through the proxy.
+
 Do **not** commit these values to Git.
 
 ## Access warning

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.5 — 2026-11-06
+- Added `scripts/activate-worker-proxy.sh`: guided activation of Worker proxy mode (origin + optional Access service token), stores Worker secrets via Wrangler, deploys, and verifies `/api/health` through the proxy. Bash syntax checked; live Cloudflare activation requires owner credentials.
+
 ## 1.0.4 — 2026-11-06
 - Added optional Cloudflare Worker reverse-proxy mode (`OMNIFIX_ORIGIN`) for an already-running OmniFix origin, while preserving the default static guard notice when unconfigured.
 - Proxy mode forwards auth cookies/CSRF safely, rewrites upstream redirects/cookie domains, rejects foreign browser origins, supports optional Cloudflare Access service-token headers, and avoids caching private responses.
