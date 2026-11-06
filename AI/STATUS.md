@@ -28,6 +28,7 @@ Application implemented and running locally in the development sandbox. Core end
 - Live API health: ok; unauthenticated document access: 401; shell: 200.
 - Compose YAML parses; loopback-only default binding confirmed.
 - Backup/restore drill: sandbox archive restored to an isolated directory; SQLite integrity ok, owner login 200, document list 200, original file 200.
+- Cloudflare Worker proxy mode: local Wrangler dev proxy to running OmniFix passed health/session/login/documents, upload/process/download/delete, foreign-origin rejection and scheme-relative path guard; production Tunnel/Access activation still requires owner-configured `OMNIFIX_ORIGIN` and optional Access service-token secrets.
 
 ## Not verified here
 - Docker build/runtime and Nginx runtime (Docker unavailable).

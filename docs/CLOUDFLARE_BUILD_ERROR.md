@@ -83,13 +83,28 @@ Environment variable: NEXT_TELEMETRY_DISABLED=1
 
 Do not use `npx wrangler deploy` for Pages; use Cloudflare Pages deployment. The app’s `/api` calls will fail unless you separately provide a compatible backend and adjust CORS/cookies/origin configuration.
 
-## Repository guard for accidental Workers Builds
+## Repository guard / optional reverse proxy for Workers Builds
 
-The repository now includes a minimal `wrangler.toml` and `cloudflare-worker/` static notice page. If a Cloudflare Workers Builds integration remains connected and runs `npx wrangler deploy`, Wrangler can detect static assets and deploy the notice page instead of failing with “Could not detect a directory containing static files”.
+The repository includes `wrangler.toml` and `cloudflare-worker/`. If a Cloudflare Workers Builds integration remains connected and runs `npx wrangler deploy`, Wrangler can deploy this Worker instead of failing with “Could not detect a directory containing static files”.
 
-This guard is **not** the OmniFix application. It does not deploy the FastAPI API, processing worker, OCR, database, or private storage. API paths return a clear `501 not_deployed_here` response.
+The Worker has two modes:
 
-If you do not want the notice page deployed, disconnect Workers Builds in the Cloudflare dashboard.
+1. **Guard mode (default):** no `OMNIFIX_ORIGIN` is configured. It serves a static notice page. API paths return `501 not_deployed_here`.
+2. **Proxy mode:** `OMNIFIX_ORIGIN` is configured. It forwards requests to an already-running OmniFix deployment, usually a Cloudflare Tunnel HTTPS hostname.
+
+Neither mode runs the OmniFix Python API, processing worker, OCR, SQLite database, or private storage on Cloudflare Workers. Proxy mode only forwards traffic to a deployment that is already running elsewhere.
+
+To enable proxy mode, configure Worker variables/secrets:
+
+```text
+OMNIFIX_ORIGIN=https://scanner.example.com
+CF_ACCESS_CLIENT_ID=<Access service token id, if origin uses Access>
+CF_ACCESS_CLIENT_SECRET=<Access service token secret, if origin uses Access>
+```
+
+Do not commit secrets. If the Worker uses an Access service token to reach the origin, protect the Worker itself with Cloudflare Access too. See `cloudflare-worker/README.md`.
+
+If you do not want the notice page or proxy deployed, disconnect Workers Builds in the Cloudflare dashboard.
 
 ## Recommended conclusion
 

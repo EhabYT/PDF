@@ -1,14 +1,24 @@
-# Cloudflare Workers Builds guard configuration.
+# Cloudflare Workers Builds configuration.
 #
 # This repository is a full-stack Python + Next.js application. The real app
-# cannot run as a Cloudflare Worker. If a Cloudflare Workers Builds integration
-# remains connected and runs `npx wrangler deploy`, this configuration deploys a
-# small static notice page instead of failing with "Could not detect a directory
-# containing static files".
+# cannot run as a Cloudflare Worker. This Worker has two modes:
 #
-# It does NOT deploy the OmniFix API, worker, OCR, or private storage.
-# For the real application, disconnect Workers Builds and use Docker +
-# Cloudflare Tunnel + Access: docs/CLOUDFLARE_TUNNEL.md
+# 1. Guard mode (default): no OMNIFIX_ORIGIN is configured, so it deploys a
+#    static notice page instead of failing Workers Builds.
+# 2. Reverse-proxy mode: OMNIFIX_ORIGIN points at an already-running OmniFix
+#    deployment (Docker + Nginx, usually behind Cloudflare Tunnel). The Worker
+#    forwards browser traffic to that origin; it still does not run Python,
+#    OCR, SQLite, or private storage on Workers.
+#
+# Configure proxy mode with Cloudflare Worker variables/secrets, not by
+# committing secrets to this repository:
+#   OMNIFIX_ORIGIN          required, e.g. https://scanner.example.com
+#   CF_ACCESS_CLIENT_ID     optional Access service-token id
+#   CF_ACCESS_CLIENT_SECRET optional Access service-token secret
+#
+# If the origin uses Cloudflare Access, protect the Worker itself with Access
+# too when using a service token. See cloudflare-worker/README.md and
+# docs/CLOUDFLARE_TUNNEL.md.
 
 account_id = "004fe70f748804a3fbce22da0360719f"
 name = "pdf"

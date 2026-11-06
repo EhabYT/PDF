@@ -6,7 +6,7 @@ A private, single-owner document scanning and enhancement platform inspired by C
 
 ## PDF / Cloudflare Tunnel quickstart
 
-> **Cloudflare deploy note:** This repository is a full-stack Python + Next.js application, not a Cloudflare Worker. The real app must run with Docker and can be exposed through Cloudflare Tunnel + Access. A minimal `wrangler.toml` guard is included so an accidentally connected Workers Builds integration deploys a static notice page instead of failing, but that notice page is **not** the application. See [docs/CLOUDFLARE_BUILD_ERROR.md](docs/CLOUDFLARE_BUILD_ERROR.md).
+> **Cloudflare deploy note:** This repository is a full-stack Python + Next.js application, not a Cloudflare Worker. The real app must run with Docker and can be exposed through Cloudflare Tunnel + Access. The included Worker has two modes: a static guard notice by default, or a reverse proxy to an already-running OmniFix origin when `OMNIFIX_ORIGIN` is configured. Proxy mode does not run Python/OCR/SQLite on Workers. See [cloudflare-worker/README.md](cloudflare-worker/README.md) and [docs/CLOUDFLARE_BUILD_ERROR.md](docs/CLOUDFLARE_BUILD_ERROR.md).
 
 This repository contains the full OmniFix Private Scanner source. To run it as a private PDF scanner behind Cloudflare Tunnel:
 

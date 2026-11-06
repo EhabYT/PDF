@@ -97,6 +97,22 @@ Zero Trust dashboard:
 
 Do **not** create a broad “Allow everyone” policy. The tunnel alone is not authentication.
 
+## 3b. Optional: proxy the Cloudflare Worker to this Tunnel hostname
+
+The repository Worker can forward traffic to an already-running OmniFix origin instead of showing the static notice. This is optional; the simplest private deployment is to use the Tunnel hostname directly.
+
+Set these Worker variables/secrets on the `pdf` Worker:
+
+```text
+OMNIFIX_ORIGIN=https://scanner.example.com
+CF_ACCESS_CLIENT_ID=<Access service token id, only if the origin uses Access>
+CF_ACCESS_CLIENT_SECRET=<Access service token secret, only if the origin uses Access>
+```
+
+If the origin is protected by Cloudflare Access and the Worker uses a service token, protect the Worker hostname with Cloudflare Access too. Otherwise the Worker becomes a public bypass around the origin's Access policy.
+
+Proxy mode remains subject to Cloudflare request-body limits. For uploads above the Cloudflare free/pro body cap, use the Tunnel hostname directly instead of the Worker proxy.
+
 ## 4. Verify
 
 ```bash

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 — 2026-11-06
+- Added optional Cloudflare Worker reverse-proxy mode (`OMNIFIX_ORIGIN`) for an already-running OmniFix origin, while preserving the default static guard notice when unconfigured.
+- Proxy mode forwards auth cookies/CSRF safely, rewrites upstream redirects/cookie domains, rejects foreign browser origins, supports optional Cloudflare Access service-token headers, and avoids caching private responses.
+- Added `cloudflare-worker/README.md` with proxy/Access setup and warnings; updated README and Cloudflare build-error guide.
+- Verified locally with Wrangler dev against the running OmniFix app: health, session, login, document list, upload, processing, original/processed download, delete cleanup, foreign-origin rejection, and scheme-relative path guard. Real Tunnel/Access proxy deployment still requires owner Cloudflare variables/secrets.
+
 ## 1.0.3 — 2026-11-06
 - Added `scripts/restore.sh`: validates backup archive paths, rejects links, moves existing storage aside with `--force`, extracts database/private storage and runs SQLite integrity check.
 - Verified a sandbox backup/restore drill: restored copy passed integrity, owner login, document listing and original-file serving.
