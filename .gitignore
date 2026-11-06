@@ -14,6 +14,8 @@ out/
 dist/
 build/
 storage/
+backups/
+*.pre-restore-*
 *.db
 *.db-wal
 *.db-shm

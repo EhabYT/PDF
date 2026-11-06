@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3 — 2026-11-06
+- Added `scripts/restore.sh`: validates backup archive paths, rejects links, moves existing storage aside with `--force`, extracts database/private storage and runs SQLite integrity check.
+- Verified a sandbox backup/restore drill: restored copy passed integrity, owner login, document listing and original-file serving.
+- Documented restore helper in README and `docs/BACKUP_RESTORE.md`; ignored `backups/` and pre-restore directories.
+- Replaced stale `next lint` with ESLint 9 flat config (`eslint-config-next`), added `npm run lint` to the test script, and overrode vulnerable transitive `minimatch` to keep `npm audit` at 0 vulnerabilities.
+
 ## 1.0.2 — 2026-11-06
 - Added a Cloudflare Workers Builds guard (`wrangler.toml` + static notice Worker) so accidental `npx wrangler deploy` integrations deploy a clear notice instead of failing on missing static assets. The guard is not the OmniFix application; real deployment remains Docker + Cloudflare Tunnel.
 - Verified guard with `wrangler deploy --dry-run` (Wrangler 4.158.0, Node 22).

@@ -20,12 +20,14 @@ Application implemented and running locally in the development sandbox. Core end
 - Backend + engine/visual tests: **44 passed** (includes raised upload-limit regression tests).
 - Default upload limits raised and verified: 50 MB/image, 100 MB/PDF, 500 MB/request, 300 pages; Nginx upload locations allow 500 MB.
 - Frontend unit tests: **7 passed**.
+- ESLint: **0 errors** (warnings remain for incremental type/style cleanup).
 - Browser E2E: **2 passed** (desktop Chromium 1440×1000; mobile Chromium Pixel 5) — login, upload, processing, compare, smart naming, PDF export, download, no horizontal overflow.
 - TypeScript: pass. Next.js production build: pass.
 - `pip-audit -r backend/requirements.lock`: no known vulnerabilities.
 - `npm audit`: 0 vulnerabilities.
 - Live API health: ok; unauthenticated document access: 401; shell: 200.
 - Compose YAML parses; loopback-only default binding confirmed.
+- Backup/restore drill: sandbox archive restored to an isolated directory; SQLite integrity ok, owner login 200, document list 200, original file 200.
 
 ## Not verified here
 - Docker build/runtime and Nginx runtime (Docker unavailable).

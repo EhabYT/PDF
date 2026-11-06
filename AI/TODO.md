@@ -7,7 +7,7 @@ No critical application functionality is left as a mock or placeholder. The foll
 - [ ] Test physical iPhone Safari and Android Chrome (camera capture, touch corner editor, PWA install).
 - [ ] Test desktop Safari, Edge and Firefox.
 - [ ] Validate WireGuard/Tailscale or SSH-tunnel remote access and firewall rules.
-- [ ] Perform a backup/restore drill on a copied storage directory.
+- [ ] Perform a production backup/restore drill on the owner’s Docker host. A sandbox archive restore drill passed (SQLite integrity, login, document list, original file).
 - [ ] Review rule-based naming on the owner’s real document types; extend keyword rules only from visible evidence.
 
 Optional future enhancements (not required for current scope): OCR-searchable PDF text layer, semantic local classification, distributed queue, full UI translation of every explanatory string.

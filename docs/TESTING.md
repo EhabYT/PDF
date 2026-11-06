@@ -6,8 +6,10 @@ bash scripts/test.sh
 OWNER_PASSWORD='...' npm run test:e2e --prefix frontend
 .venv/bin/python scripts/generate_test_dataset.py
 .venv/bin/pip-audit -r backend/requirements.lock
-(cd frontend && npm audit)
+(cd frontend && npm run lint && npm audit)
 ```
+
+`npm run lint` uses ESLint 9 flat config with `eslint-config-next`. It must exit with 0 errors. Existing style/type warnings are tracked separately; private authenticated previews intentionally use `<img>` rather than a shared image optimizer.
 
 ## Backend / security (`backend/tests`)
 - Auth login/logout/session expiry/revocation, CSRF, cross-origin rejection, rate limits.

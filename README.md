@@ -182,7 +182,15 @@ Local Tesseract OCR recognizes visible text; transparent multilingual rules clas
 bash scripts/backup.sh
 ```
 
-Creates a timestamped archive containing a consistent SQLite snapshot and private storage. Store backups encrypted off-device. Stop the worker before restoring. See [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md).
+Creates a timestamped archive containing a consistent SQLite snapshot and private storage. Store backups encrypted off-device. Stop the worker before restoring.
+
+Restore with:
+
+```bash
+bash scripts/restore.sh backups/omnifix-backup-<timestamp>.tar.gz --force
+```
+
+See [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md).
 
 ## Testing
 
@@ -226,7 +234,7 @@ frontend/         Next.js app, components, PWA assets, unit/browser tests
 processing/       OmniFix engine, PDF import/export, OCR/naming, visual tests
 storage/          Private originals, processed files, thumbnails, temp, exports (gitignored)
 deployment/       Dockerfiles, Nginx, healthcheck
-scripts/          Setup, bootstrap, dev/start, test, backup, dataset generation
+scripts/          Setup, bootstrap, dev/start, test, backup/restore, Cloudflare deploy helper, dataset generation
 docs/             Deployment, API, processing, naming, backup, testing, limitations
 AI/               Specification, architecture, decisions, security, status, TODO, changelog
 ```
