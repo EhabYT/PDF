@@ -13,6 +13,19 @@ This repository contains the full OmniFix Private Scanner source. To run it as a
 ```bash
 git clone https://github.com/EhabYT/PDF.git
 cd PDF
+```
+
+**Recommended helper:** on the Docker host, run:
+
+```bash
+bash scripts/deploy-cloudflare.sh
+```
+
+It asks for the tunnel hostname/token, writes a production `.env`, starts Docker + cloudflared, waits for health and creates the owner. You still must point the tunnel public hostname to `http://nginx:8080` and protect it with Cloudflare Access.
+
+Manual setup:
+
+```bash
 cp .env.example .env
 ```
 

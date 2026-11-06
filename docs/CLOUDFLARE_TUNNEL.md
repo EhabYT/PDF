@@ -6,6 +6,18 @@ This guide exposes OmniFix through Cloudflare Tunnel **without opening inbound p
 
 ## 1. Prepare the application environment
 
+### Helper script
+
+On the Docker host, from the repository root:
+
+```bash
+bash scripts/deploy-cloudflare.sh
+```
+
+The script prompts for the public hostname and tunnel token, generates `SESSION_SECRET`, writes `.env`, starts the Compose stack with cloudflared, waits for API health and runs owner bootstrap. It does not create Cloudflare Access policies; do that in the dashboard.
+
+### Manual `.env`
+
 In `.env`:
 
 ```env
