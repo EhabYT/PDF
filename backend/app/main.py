@@ -15,6 +15,8 @@ if settings.environment == "production" and not settings.session_secret:
     raise RuntimeError("Production requires an explicit SESSION_SECRET environment variable")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("omnifix.api")
+if settings.auth_disabled:
+    log.warning("AUTH_DISABLED=true: the sign-in page is removed and the owner is auto-authenticated. Anyone who can reach this URL has full owner access. Only run this behind Cloudflare Access, a VPN, or a trusted private network.")
 app = FastAPI(title="OmniFix Private Scanner API", version="1.0.0", docs_url="/api/docs" if settings.environment != "production" else None, redoc_url=None, openapi_url="/api/openapi.json" if settings.environment != "production" else None)
 if settings.origins:
     app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token"])
@@ -81,7 +83,7 @@ def unexpected_error(request: Request, exc: Exception):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "private": True, "registration": False}
+    return {"status": "ok", "private": True, "registration": False, "auth_disabled": settings.auth_disabled}
 
 
 for router in [auth.router, documents.router, pages.router, jobs.router, exports.router, settings_api.router, security.router, dashboard.router]:

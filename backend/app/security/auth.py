@@ -5,7 +5,7 @@ from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHas
 from cryptography.fernet import Fernet
 import pyotp
 from sqlalchemy import select, delete
-from fastapi import Request, Depends
+from fastapi import Request, Response, Depends
 from sqlalchemy.orm import Session as DbSession
 from app.core.database import get_db
 from app.core.config import settings
@@ -62,12 +62,22 @@ def set_session_cookie(response, token: str):
     response.set_cookie(settings.cookie_name, token, httponly=True, secure=settings.cookie_secure, samesite="strict", max_age=settings.session_hours * 3600, path="/")
 
 
-def current_session(request: Request, db: DbSession = Depends(get_db)) -> tuple[User, Session]:
+def current_session(request: Request, response: Response, db: DbSession = Depends(get_db)) -> tuple[User, Session]:
     token = request.cookies.get(settings.cookie_name)
-    if not token:
-        raise AppError("unauthorized", "Please sign in to continue.", 401)
-    row = db.get(Session, token_hash(token))
-    if not row or row.revoked or row.expires_at <= now() or row.last_seen < now() - timedelta(minutes=settings.session_idle_minutes):
+    row = db.get(Session, token_hash(token)) if token else None
+    valid = bool(row and not row.revoked and row.expires_at > now() and row.last_seen >= now() - timedelta(minutes=settings.session_idle_minutes))
+    if not valid and settings.auth_disabled:
+        # Opt-in no-login mode: transparently sign in the single owner so the
+        # app opens without a sign-in page. CSRF protection stays enabled.
+        owner = db.scalar(select(User).order_by(User.created_at).limit(1))
+        if owner:
+            token = create_session(db, owner, request)
+            set_session_cookie(response, token)
+            row = db.get(Session, token_hash(token))
+            request.state.owner = owner
+            request.state.session = row
+            return owner, row
+    if not valid:
         raise AppError("unauthorized", "Your session has expired. Please sign in again.", 401)
     user = db.get(User, row.user_id)
     if not user:

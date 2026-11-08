@@ -145,3 +145,26 @@ def test_security_headers_and_no_public_storage(client):
     assert response.headers["x-content-type-options"] == "nosniff"
     assert "frame-ancestors" in response.headers["content-security-policy"]
     assert client.get("/storage/originals/images/anything.jpg").status_code in {401, 404}
+
+
+def test_auth_disabled_auto_login(client, monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    # No /login call: the session endpoint transparently signs in the owner.
+    info = client.get("/api/auth/session").json()
+    assert info["authenticated"] is True
+    assert info["auth_disabled"] is True
+    client.headers["X-CSRF-Token"] = info["csrf_token"]
+    # Protected reads work without ever signing in.
+    assert client.get("/api/documents").status_code == 200
+    assert client.get("/api/dashboard").status_code == 200
+    # CSRF protection remains enabled even in no-login mode.
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"X-CSRF-Token": ""}).status_code == 403
+    assert client.patch("/api/settings", json={"theme": "dark"}).status_code == 200
+
+
+def test_auth_enabled_by_default_requires_login(client):
+    info = client.get("/api/auth/session").json()
+    assert info["authenticated"] is False
+    assert info.get("auth_disabled", False) is False
+    assert client.get("/api/documents").status_code == 401

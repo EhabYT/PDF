@@ -218,6 +218,10 @@ Current verified results are recorded in [AI/STATUS.md](AI/STATUS.md) and [docs/
 
 Argon2id passwords, hashed opaque sessions, HttpOnly/SameSite cookies, CSRF + Origin checks, login throttling, optional encrypted TOTP, owner-scoped queries, random storage keys, strict upload validation, decompression/page/pixel limits, security headers, no public storage URLs, no analytics. Run `pip-audit -r backend/requirements.lock` and `npm audit` before deployment. See [AI/SECURITY.md](AI/SECURITY.md).
 
+### Optional: remove the sign-in page
+
+Set `AUTH_DISABLED=true` in `.env` to skip the OmniFix login page and auto-authenticate the owner. The app then opens straight to the dashboard. **This disables authentication** — anyone who can reach the URL gets full owner access. Only enable it behind Cloudflare Access, a VPN, or a trusted private network. CSRF protection stays on. Default is `false` (secure). You still create the owner once with `scripts/bootstrap.sh`.
+
 ## Updating
 
 1. Back up storage and database.

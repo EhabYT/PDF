@@ -18,8 +18,11 @@ Date: 2026-11-05
 - No analytics/telemetry by default; Next telemetry disabled in build scripts; no external OCR/AI/storage.
 - Errors return safe codes/messages; logs record exception types, not document contents or stack traces to users.
 
+## Optional no-login mode (opt-in, off by default)
+`AUTH_DISABLED=true` removes the sign-in page and transparently authenticates the single owner (`current_session` auto-provisions an owner session). This **disables authentication**: anyone who can reach the URL has full owner access. It is intended only for deployments already protected by Cloudflare Access, a VPN, or a trusted private network. CSRF and Origin checks remain enabled; owner-scoped authorization and all upload/storage safeguards are unchanged. The API logs a startup warning when enabled. Default is `false`. Covered by `test_auth_disabled_auto_login` and `test_auth_enabled_by_default_requires_login`.
+
 ## Tests
-Authentication, session expiry/revocation, CSRF, cross-origin rejection, login throttling, IDOR, path traversal, malicious/corrupt/oversized uploads, invalid PDF, unauthorized downloads, TOTP, password change, security headers and private storage access are covered in `backend/tests/test_security.py`.
+Authentication, session expiry/revocation, CSRF, cross-origin rejection, login throttling, IDOR, path traversal, malicious/corrupt/oversized uploads, invalid PDF, unauthorized downloads, TOTP, password change, security headers, private storage access and the opt-in no-login mode are covered in `backend/tests/test_security.py`.
 
 ## Dependency audit
 Initial scans found vulnerabilities in Pillow, cryptography, python-multipart, pydantic-settings, pytest, Next.js, PostCSS and Vitest/tinypool. Dependencies were upgraded and locks regenerated.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.7 — 2026-11-08
+- Added opt-in no-login mode: `AUTH_DISABLED=true` removes the OmniFix sign-in page and auto-authenticates the owner (owner session auto-provisioned in `current_session`). Default remains `false` (secure).
+- CSRF/Origin checks, owner-scoped authorization and all upload/storage safeguards stay enabled; API logs a startup warning when no-login mode is on; sign-out button hidden in the UI when enabled.
+- Added `AUTH_DISABLED` to `.env.example`, README and AI/SECURITY.md with a clear security warning.
+- Tests: `test_auth_disabled_auto_login` and `test_auth_enabled_by_default_requires_login`; backend+engine suite **46 passed**, frontend unit **7 passed**, typecheck/build/lint OK.
+
 ## 1.0.6 — 2026-11-06
 - Added a no-login proxy activation path: `OMNIFIX_ORIGIN` now lives in `wrangler.toml [vars]` (empty default = guard mode). Editing that one line on github.com and committing to `main` triggers Workers Builds to redeploy the proxy automatically — no `wrangler login` or CLI needed.
 - Documented the GitHub-edit method and clarified that Access service-token secrets must still be added in the browser dashboard (never committed). Wrangler dry-run confirms the `OMNIFIX_ORIGIN` environment variable binding.

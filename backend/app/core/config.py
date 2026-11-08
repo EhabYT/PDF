@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     frontend_dir: Path = ROOT / "frontend" / "out"
     login_attempts: int = 5
     login_window_minutes: int = 15
+    # Opt-in: remove the sign-in page and auto-authenticate the owner.
+    # WARNING: this disables authentication. Only enable behind Cloudflare
+    # Access, a VPN, or a trusted private network. Default is secure (False).
+    auth_disabled: bool = False
 
     @property
     def storage(self) -> Path:
