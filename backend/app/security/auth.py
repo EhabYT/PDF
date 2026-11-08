@@ -71,6 +71,17 @@ def current_session(request: Request, response: Response, db: DbSession = Depend
         # app opens without a sign-in page. CSRF protection stays enabled.
         owner = db.scalar(select(User).order_by(User.created_at).limit(1))
         if owner:
+            if row and row.user_id == owner.id and not row.revoked:
+                # Refresh the existing session in place so the cookie and CSRF
+                # token stay stable. Otherwise a background poll after idle
+                # expiry would rotate the cookie while the page keeps the old
+                # CSRF token, causing "Security token missing or invalid".
+                row.expires_at = now() + timedelta(hours=settings.session_hours)
+                row.last_seen = now()
+                db.commit()
+                request.state.owner = owner
+                request.state.session = row
+                return owner, row
             token = create_session(db, owner, request)
             set_session_cookie(response, token)
             row = db.get(Session, token_hash(token))

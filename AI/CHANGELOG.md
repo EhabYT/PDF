@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.8 — 2026-11-08
+- Fixed "Security token missing or invalid" in no-login mode: when an auto-provisioned owner session looked idle-expired, a background poll used to mint a brand-new session (new cookie + CSRF token) while the open page kept the old token, so the next action returned `403 csrf_failed`. `current_session` now refreshes the existing non-revoked owner session **in place** (extends `expires_at`/`last_seen`, keeps the same cookie + CSRF token) before falling back to creating a new one.
+- Frontend `api()` and `uploadFiles()` now transparently refresh the CSRF token and retry once on `403 csrf_failed` instead of surfacing the error.
+- Pinned the test suite to secure mode (`AUTH_DISABLED=false` in `conftest.py`) so tests no longer inherit the deployment `.env`; added regression test `test_auth_disabled_csrf_stable_after_idle`.
+- Bumped the service-worker shell cache to `omnifix-shell-v2` so clients pick up the fix cleanly.
+- Tests: backend+engine suite **47 passed**, frontend unit **7 passed**, typecheck/build OK. Verified live: after forced idle expiry, the session cookie no longer rotates and `PATCH /api/settings` + `POST /api/auth/logout` succeed with the original CSRF token.
+
 ## 1.0.7 — 2026-11-08
 - Added opt-in no-login mode: `AUTH_DISABLED=true` removes the OmniFix sign-in page and auto-authenticates the owner (owner session auto-provisioned in `current_session`). Default remains `false` (secure).
 - CSRF/Origin checks, owner-scoped authorization and all upload/storage safeguards stay enabled; API logs a startup warning when no-login mode is on; sign-out button hidden in the UI when enabled.

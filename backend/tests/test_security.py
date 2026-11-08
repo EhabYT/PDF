@@ -168,3 +168,21 @@ def test_auth_enabled_by_default_requires_login(client):
     assert info["authenticated"] is False
     assert info.get("auth_disabled", False) is False
     assert client.get("/api/documents").status_code == 401
+
+
+def test_auth_disabled_csrf_stable_after_idle(client, monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    info = client.get("/api/auth/session").json()
+    csrf = info["csrf_token"]
+    client.headers["X-CSRF-Token"] = csrf
+    # Force the auto-provisioned session to look idle-expired.
+    with SessionLocal() as db:
+        for s in db.query(Session).all():
+            s.last_seen = now() - timedelta(minutes=settings.session_idle_minutes + 5)
+        db.commit()
+    # A background poll must refresh the session in place, not rotate the
+    # cookie/CSRF token (regression: "Security token missing or invalid").
+    assert client.get("/api/dashboard").status_code == 200
+    # The original CSRF token must still be accepted for a mutating request.
+    assert client.patch("/api/settings", json={"theme": "dark"}).status_code == 200
