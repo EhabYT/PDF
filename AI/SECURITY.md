@@ -5,7 +5,7 @@ Date: 2026-11-05
 ## Controls
 - Single owner via CLI bootstrap; no registration endpoint; second bootstrap refused.
 - Argon2id (time_cost=3, memory_cost=64 MiB, parallelism=2); dummy hash for missing users; rehash on login when parameters change.
-- Opaque 256-bit session tokens stored as SHA-256 hashes; HttpOnly, SameSite=Strict cookies; Secure flag configurable; 12 h absolute / 60 min idle expiry; revocation and logout-all.
+- Opaque 256-bit session tokens stored as SHA-256 hashes; HttpOnly cookies; SameSite configurable via `COOKIE_SAMESITE` (default `strict`, most protective); Secure flag configurable and forced on when `SameSite=None`; 12 h absolute / 60 min idle expiry; revocation and logout-all. `SameSite=None` exists only for cross-site iframe/embedded-preview hosting, where a `Strict` cookie would be dropped by the browser and every mutation would fail CSRF; it requires HTTPS and does not disable the CSRF token or Origin checks. Covered by `test_cookie_samesite_policy`.
 - CSRF token required on all mutating API requests; login uses a pre-auth double-submit token; Origin validated against request host or explicit allowlist.
 - Login rate limits per IP and global; password/TOTP change throttling.
 - Optional TOTP with encrypted secret (Fernet derived from deployment secret) and hashed one-time recovery codes.

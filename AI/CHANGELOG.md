@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.9 — 2026-11-08
+- Fixed the persistent "Security token missing or invalid" on uploads/mutations in the embedded preview. Root cause: the session cookie was hard-coded `SameSite=Strict`, which browsers **drop on cross-site iframe API requests**, so the CSRF middleware never received the session cookie and rejected every `POST`/`PATCH`/`DELETE` (a new session was auto-provisioned on each request — 59 rows observed).
+- Added `COOKIE_SAMESITE` (`strict` default / `lax` / `none`). `none` is for cross-site iframe hosting only and automatically forces `Secure` (browsers require HTTPS for `SameSite=None`). CSRF token + Origin checks are unchanged; the secure `strict` default is untouched. Preview `.env` now uses `COOKIE_SAMESITE=none` + `COOKIE_SECURE=true`.
+- Added regression test `test_cookie_samesite_policy`; pinned `COOKIE_SAMESITE=strict` in the test conftest so tests ignore the deployment `.env`.
+- Tests: backend+engine suite **48 passed**. Verified live: with the session cookie present, `POST /api/documents/upload` returns **202** and the document processes; test document removed afterwards (0 documents).
+
 ## 1.0.8 — 2026-11-08
 - Fixed "Security token missing or invalid" in no-login mode: when an auto-provisioned owner session looked idle-expired, a background poll used to mint a brand-new session (new cookie + CSRF token) while the open page kept the old token, so the next action returned `403 csrf_failed`. `current_session` now refreshes the existing non-revoked owner session **in place** (extends `expires_at`/`last_seen`, keeps the same cookie + CSRF token) before falling back to creating a new one.
 - Frontend `api()` and `uploadFiles()` now transparently refresh the CSRF token and retry once on `403 csrf_failed` instead of surfacing the error.

@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 TEST_DIR = Path(tempfile.mkdtemp(prefix="omnifix-test-"))
-os.environ.update(DATA_DIR=str(TEST_DIR), SESSION_SECRET="test-secret-" + "x" * 40, ENVIRONMENT="development", TRUSTED_HOSTS="testserver,localhost,127.0.0.1", COOKIE_SECURE="false", OCR_LANGUAGES="deu+eng", AUTH_DISABLED="false")
+os.environ.update(DATA_DIR=str(TEST_DIR), SESSION_SECRET="test-secret-" + "x" * 40, ENVIRONMENT="development", TRUSTED_HOSTS="testserver,localhost,127.0.0.1", COOKIE_SECURE="false", OCR_LANGUAGES="deu+eng", AUTH_DISABLED="false", COOKIE_SAMESITE="strict")
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app

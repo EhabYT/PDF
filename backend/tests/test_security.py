@@ -186,3 +186,25 @@ def test_auth_disabled_csrf_stable_after_idle(client, monkeypatch):
     assert client.get("/api/dashboard").status_code == 200
     # The original CSRF token must still be accepted for a mutating request.
     assert client.patch("/api/settings", json={"theme": "dark"}).status_code == 200
+
+
+def test_cookie_samesite_policy(client, monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "cookie_secure", False)
+    # Default stays strict (most protective) for normal same-origin deployments.
+    monkeypatch.setattr(settings, "cookie_samesite", "strict")
+    client.cookies.clear()
+    sc = client.get("/api/auth/session").headers["set-cookie"].lower()
+    assert "samesite=strict" in sc
+    assert settings.cookie_secure_effective is False
+    # Cross-site/embedded preview opt-in: SameSite=None must force Secure,
+    # otherwise browsers drop the cookie and every mutation fails CSRF.
+    monkeypatch.setattr(settings, "cookie_samesite", "none")
+    client.cookies.clear()
+    sc = client.get("/api/auth/session").headers["set-cookie"].lower()
+    assert "samesite=none" in sc and "secure" in sc
+    assert settings.cookie_secure_effective is True
+    # Invalid values fall back to the secure default.
+    monkeypatch.setattr(settings, "cookie_samesite", "bogus")
+    assert settings.cookie_samesite_effective == "strict"

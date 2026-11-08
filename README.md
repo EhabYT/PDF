@@ -222,6 +222,10 @@ Argon2id passwords, hashed opaque sessions, HttpOnly/SameSite cookies, CSRF + Or
 
 Set `AUTH_DISABLED=true` in `.env` to skip the OmniFix login page and auto-authenticate the owner. The app then opens straight to the dashboard. **This disables authentication** — anyone who can reach the URL gets full owner access. Only enable it behind Cloudflare Access, a VPN, or a trusted private network. CSRF protection stays on. Default is `false` (secure). You still create the owner once with `scripts/bootstrap.sh`.
 
+### Embedded / cross-site previews ("Security token missing or invalid")
+
+If the app is shown inside a **cross-site iframe** (for example a hosted live preview), browsers drop `SameSite=Strict` cookies on the iframe's API requests. Pages still load, but every upload/save is rejected with *"Security token missing or invalid"* because the CSRF check never receives the session cookie. For that hosting style only, set `COOKIE_SAMESITE=none` and serve over HTTPS (`COOKIE_SECURE=true` is then enforced automatically). Normal same-origin deployments should keep the default `COOKIE_SAMESITE=strict`. The CSRF token and Origin checks stay enabled either way.
+
 ## Updating
 
 1. Back up storage and database.

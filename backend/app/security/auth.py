@@ -59,7 +59,7 @@ def create_session(db: DbSession, user: User, request: Request) -> str:
 
 
 def set_session_cookie(response, token: str):
-    response.set_cookie(settings.cookie_name, token, httponly=True, secure=settings.cookie_secure, samesite="strict", max_age=settings.session_hours * 3600, path="/")
+    response.set_cookie(settings.cookie_name, token, httponly=True, secure=settings.cookie_secure_effective, samesite=settings.cookie_samesite_effective, max_age=settings.session_hours * 3600, path="/")
 
 
 def current_session(request: Request, response: Response, db: DbSession = Depends(get_db)) -> tuple[User, Session]:

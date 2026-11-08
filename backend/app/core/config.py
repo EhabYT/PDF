@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     database_url: str = ""
     session_secret: str = ""
     cookie_secure: bool = False
+    # Session/CSRF cookie SameSite policy: "strict" (default, most protective),
+    # "lax", or "none". Use "none" ONLY when the app is embedded in a cross-site
+    # iframe (e.g. a hosted preview) — browsers then require Secure, which is
+    # enforced automatically below. CSRF token + Origin checks stay enabled.
+    cookie_samesite: str = "strict"
     cookie_name: str = "omnifix_session"
     session_hours: int = 12
     session_idle_minutes: int = 60
@@ -67,6 +72,16 @@ class Settings(BaseSettings):
     @property
     def origins(self) -> list[str]:
         return [x.strip().rstrip("/") for x in self.allowed_origins.split(",") if x.strip()]
+
+    @property
+    def cookie_samesite_effective(self) -> str:
+        value = self.cookie_samesite.strip().lower()
+        return value if value in {"strict", "lax", "none"} else "strict"
+
+    @property
+    def cookie_secure_effective(self) -> bool:
+        # SameSite=None is only accepted by browsers over HTTPS with Secure.
+        return self.cookie_secure or self.cookie_samesite_effective == "none"
 
 
 settings = Settings()

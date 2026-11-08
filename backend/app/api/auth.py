@@ -24,7 +24,7 @@ def session_info(request: Request, response: Response, db: Session = Depends(get
         return {"authenticated": True, "auth_disabled": settings.auth_disabled, "user": {"username": user.username, "totp_enabled": user.totp_enabled}, "csrf_token": session.csrf_token, "app_name": get_settings(db, user.id)["app_name"], "expires_at": session.expires_at.isoformat() + "Z"}
     except AppError:
         csrf = request.cookies.get("omnifix_csrf") or secrets.token_urlsafe(32)
-        response.set_cookie("omnifix_csrf", csrf, httponly=False, secure=settings.cookie_secure, samesite="strict", max_age=3600, path="/")
+        response.set_cookie("omnifix_csrf", csrf, httponly=False, secure=settings.cookie_secure_effective, samesite=settings.cookie_samesite_effective, max_age=3600, path="/")
         return {"authenticated": False, "auth_disabled": settings.auth_disabled, "csrf_token": csrf, "app_name": settings.app_name}
 
 
