@@ -28,3 +28,15 @@ compatibility_date = "2026-11-06"
 [assets]
 directory = "cloudflare-worker/public"
 binding = "ASSETS"
+
+# --- Proxy origin: edit this ONE line, no Cloudflare/CLI login needed ---
+# Set OMNIFIX_ORIGIN to the HTTPS URL where OmniFix already runs, then commit
+# to main (you can edit this file directly on github.com with the pencil icon).
+# Workers Builds redeploys automatically. Leave empty ("") for the notice page.
+# Example: OMNIFIX_ORIGIN = "https://scanner.example.com"
+#
+# NOTE: this value is public in the repo. Only put the origin URL here, never
+# an Access service-token secret. Access secrets must be added in the
+# Cloudflare dashboard (browser) as Worker secrets instead.
+[vars]
+OMNIFIX_ORIGIN = ""

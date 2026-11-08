@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6 — 2026-11-06
+- Added a no-login proxy activation path: `OMNIFIX_ORIGIN` now lives in `wrangler.toml [vars]` (empty default = guard mode). Editing that one line on github.com and committing to `main` triggers Workers Builds to redeploy the proxy automatically — no `wrangler login` or CLI needed.
+- Documented the GitHub-edit method and clarified that Access service-token secrets must still be added in the browser dashboard (never committed). Wrangler dry-run confirms the `OMNIFIX_ORIGIN` environment variable binding.
+
 ## 1.0.5 — 2026-11-06
 - Added `scripts/activate-worker-proxy.sh`: guided activation of Worker proxy mode (origin + optional Access service token), stores Worker secrets via Wrangler, deploys, and verifies `/api/health` through the proxy. Bash syntax checked; live Cloudflare activation requires owner credentials.
 

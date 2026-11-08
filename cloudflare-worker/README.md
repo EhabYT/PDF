@@ -17,13 +17,34 @@ The Worker has two modes:
 
 ## Cloudflare variables/secrets
 
-Set these on the Worker (`pdf`) in the Cloudflare dashboard under **Settings → Variables and Secrets**, or with Wrangler:
+### No-login method (edit on GitHub)
+
+You do **not** need `wrangler login` or the CLI. The origin URL lives in `wrangler.toml` under `[vars]`:
+
+```toml
+[vars]
+OMNIFIX_ORIGIN = ""
+```
+
+1. Open `wrangler.toml` on github.com → click the pencil (Edit).
+2. Change `OMNIFIX_ORIGIN = ""` to your URL, e.g. `OMNIFIX_ORIGIN = "https://scanner.example.com"`.
+3. Commit to `main`. Workers Builds redeploys automatically — no Cloudflare login, no CLI.
+
+This works because Workers Builds is already connected and authenticated. The origin URL is public in the repo, which is fine for a hostname. **Never put an Access service-token secret here.**
+
+### Access secrets (browser dashboard, no CLI login)
+
+If the origin is protected by Cloudflare Access, the service-token id/secret cannot go in the public repo. Add them once in the browser dashboard (you are already signed in there):
+
+Workers & Pages → `pdf` → Settings → Variables and Secrets → add **Secrets**:
 
 | Name | Type | Required | Example |
 |---|---|---:|---|
-| `OMNIFIX_ORIGIN` | variable or secret | yes | `https://scanner.example.com` |
-| `CF_ACCESS_CLIENT_ID` | secret | only if origin uses Access service auth | Access service token client id |
-| `CF_ACCESS_CLIENT_SECRET` | secret | only if origin uses Access service auth | Access service token client secret |
+| `OMNIFIX_ORIGIN` | variable (in `wrangler.toml`) | yes | `https://scanner.example.com` |
+| `CF_ACCESS_CLIENT_ID` | secret (dashboard) | only if origin uses Access service auth | Access service token client id |
+| `CF_ACCESS_CLIENT_SECRET` | secret (dashboard) | only if origin uses Access service auth | Access service token client secret |
+
+### Optional CLI method (requires Wrangler login)
 
 Wrangler examples:
 
