@@ -230,8 +230,9 @@ Two opt-in settings cover this, in order of preference:
 
 1. `COOKIE_SAMESITE=none` (+ `COOKIE_SECURE=true`, forced automatically) — for iframes that accept third-party cookies over HTTPS. Normal same-origin deployments should keep the default `strict`.
 2. `COOKIE_FALLBACK_HEADER=true` — only for sandboxed iframes with an opaque origin where **no cookie can be stored at all**. The SPA then receives the opaque session token from `GET /api/auth/session` and echoes it in `X-Session-Token`. It is honoured **only** when `AUTH_DISABLED=true`, and the CSRF token is still required on every mutation, so it exposes no credential the browser did not already hold.
+3. `ALLOW_OPAQUE_ORIGIN=true` — required alongside option 2 for an iframe that also lacks `allow-same-origin`, because such a document has the opaque origin `"null"` and the browser blocks every API response without `Access-Control-Allow-Origin: null`. This accepts `Origin: null` in the CSRF/Origin check and adds `null` to the CORS allowlist. It is honoured **only** when `AUTH_DISABLED=true`, and any real foreign origin is still rejected.
 
-Neither option weakens the CSRF token or Origin checks. Both default to off.
+None of these options weakens the CSRF token or Origin checks, and all default to off. If the preview still shows the sign-in page while `AUTH_DISABLED=true`, the embed is almost certainly sandboxed — enable options 2 and 3 in the host's environment. Serving the app directly over its own URL (or inside a plain, non-sandboxed iframe) needs none of them.
 
 ## Updating
 

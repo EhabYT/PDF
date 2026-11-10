@@ -1,3 +1,5 @@
+// A sandboxed iframe without allow-same-origin reports the opaque origin "null".
+export const opaqueOrigin = typeof window !== 'undefined' && (() => { try { return window.origin === 'null' || window.origin === null; } catch { return false; } })();
 let csrf = '';
 // Opt-in cookie-less transport. Some embedded hosts (sandboxed cross-site
 // preview iframes) refuse to store cookies at all, so the HttpOnly session

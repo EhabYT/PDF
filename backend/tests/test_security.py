@@ -253,3 +253,33 @@ def test_header_transport_requires_no_login_mode(client, monkeypatch):
     monkeypatch.setattr(settings, "cookie_fallback_header", True)
     info = client.get("/api/auth/session").json()
     assert "session_token" not in info
+
+
+def test_opaque_origin_opt_in(client, monkeypatch):
+    """Sandboxed iframes (opaque origin "null") work only when explicitly enabled."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "cookie_fallback_header", True)
+    info = client.get("/api/auth/session").json()
+    token, csrf = info["session_token"], info["csrf_token"]
+    h = {"Origin": "null", "X-CSRF-Token": csrf, "X-Session-Token": token}
+    # Default: an opaque origin is plain cross-origin and must be rejected.
+    assert client.get("/api/documents", headers=h).status_code == 200  # GET is safe
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers=h).status_code == 403
+    # Opt in: the sandboxed embed is accepted, CSRF still enforced.
+    monkeypatch.setattr(settings, "allow_opaque_origin", True)
+    client.cookies.clear()
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers=h).status_code == 200
+    assert client.get("/api/documents", headers=h).status_code == 200
+    # CSRF still mandatory for the opaque origin.
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"Origin": "null", "X-Session-Token": token}).status_code == 403
+    # A real foreign origin is still rejected even with the opt-in enabled.
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"Origin": "https://evil.example", "X-CSRF-Token": csrf, "X-Session-Token": token}).status_code == 403
+
+
+def test_opaque_origin_never_allowed_with_real_login(client, monkeypatch):
+    """The opaque-origin allowance must not weaken normal authenticated mode."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", False)
+    monkeypatch.setattr(settings, "allow_opaque_origin", True)
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"Origin": "null"}).status_code == 403

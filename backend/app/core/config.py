@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # beyond what the browser already holds. Honoured only when auth_disabled
     # (no-login mode); ignored otherwise.
     cookie_fallback_header: bool = False
+    # Opt-in companion for the same embedded hosts: a sandboxed iframe without
+    # allow-same-origin has the opaque origin "null", so the browser sends
+    # "Origin: null" and treats every request as cross-origin. Without this the
+    # request is rejected by the origin check / CORS before any handler runs.
+    # Honoured only together with auth_disabled; CSRF is still required.
+    allow_opaque_origin: bool = False
     session_hours: int = 12
     session_idle_minutes: int = 60
     allowed_origins: str = ""

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.11 — 2026-11-08
+- Fixed the **real** cause of the embedded-preview failures, found by reproducing the host with a real browser: a sandboxed iframe **without `allow-same-origin` has the opaque origin `"null"`**. In that context `document.cookie` and `localStorage` **throw**, and the browser treats every request as cross-origin, so `/api/*` responses arrive at the server but are withheld from JavaScript unless `Access-Control-Allow-Origin: null` is returned. The app therefore fell back to the sign-in page and every mutation failed.
+- Added `ALLOW_OPAQUE_ORIGIN` (default `false`): accepts `Origin: null` in the CSRF/Origin middleware **and** adds `null` to the CORS allowlist. Honoured only when `AUTH_DISABLED=true`; the CSRF token is still mandatory, and any real foreign origin is still rejected.
+- Tests: **53 passed**, incl. `test_opaque_origin_opt_in` (also asserts a foreign origin is still rejected with the opt-in on) and `test_opaque_origin_never_allowed_with_real_login`. Pinned both new flags in the test conftest so the deployment `.env` cannot leak into tests.
+- Verified in a real browser inside a cross-site `sandbox="allow-scripts"` iframe: app auto-authenticates, `POST /api/documents/upload` → **202**, document page renders with original/processed/thumbnail all **200**, OCR naming applied.
+
 ## 1.0.10 — 2026-11-08
 - Fixed the last remaining cause of "Security token missing or invalid": some embedded hosts (sandboxed cross-site preview iframes with an **opaque origin**) refuse to store cookies **at all**, so no `SameSite` setting could ever deliver the session cookie and every upload/save failed. Symptom: a new session row on nearly every request (66 accumulated).
 - Added `COOKIE_FALLBACK_HEADER` (default `false`): an opt-in, **no-login-mode-only** transport where `GET /api/auth/session` returns the opaque session token and the SPA echoes it in `X-Session-Token`. The CSRF token is still required on every mutation, so no new secret is exposed beyond what the browser already holds, and cookie storage is never weakened.

@@ -18,16 +18,29 @@ log = logging.getLogger("omnifix.api")
 if settings.auth_disabled:
     log.warning("AUTH_DISABLED=true: the sign-in page is removed and the owner is auto-authenticated. Anyone who can reach this URL has full owner access. Only run this behind Cloudflare Access, a VPN, or a trusted private network.")
 app = FastAPI(title="OmniFix Private Scanner API", version="1.0.0", docs_url="/api/docs" if settings.environment != "production" else None, redoc_url=None, openapi_url="/api/openapi.json" if settings.environment != "production" else None)
-if settings.origins:
-    app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token", "X-Session-Token"])
+_cors_origins = list(settings.origins)
+# Opt-in: sandboxed iframes without allow-same-origin have the opaque origin
+# "null". Required only for the cookie-less embedded-preview transport.
+if settings.allow_opaque_origin and settings.auth_disabled:
+    _cors_origins.append("null")
+if _cors_origins:
+    app.add_middleware(CORSMiddleware, allow_origins=_cors_origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token", "X-Session-Token"])
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=[x.strip() for x in settings.trusted_hosts.split(",")])
 
 
 @app.middleware("http")
 async def private_security(request: Request, call_next):
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
-        origin = request.headers.get("origin")
-        if origin:
+        origin = request.headers.get("origin") or ""
+        # A sandboxed iframe without allow-same-origin presents the opaque origin
+        # "null" and is treated as cross-origin by the browser, so the normal
+        # same-host / allowlist comparison can never succeed. Accept it only
+        # under the explicit opt-in, and only in no-login mode. The CSRF token
+        # check below still runs, and real cross-site origins are still rejected.
+        opaque = origin == "null" and bool(settings.allow_opaque_origin and settings.auth_disabled)
+        if opaque:
+            request.state.opaque_origin = True
+        elif origin:
             parsed = urlsplit(origin)
             same_host = parsed.hostname == request.url.hostname
             if not same_host and origin.rstrip("/") not in settings.origins:

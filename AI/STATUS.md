@@ -17,7 +17,7 @@ Application implemented and running locally in the development sandbox. Core end
 - Phase 9 Delivery: source, docs, scripts and deployment config complete; live preview running.
 
 ## Verified results
-- Backend + engine/visual tests: **51 passed** (includes raised upload-limit regression tests, opt-in no-login mode tests, the no-login CSRF-stability regression test, and the cookie SameSite-policy regression test and the cookie-less header-transport regression tests).
+- Backend + engine/visual tests: **53 passed** (includes raised upload-limit regression tests, opt-in no-login mode tests, the no-login CSRF-stability regression test, and the cookie SameSite-policy regression test the cookie-less header-transport regression tests and the opaque-origin embed regression tests).
 - Opt-in no-login mode (`AUTH_DISABLED=true`): removes the sign-in page, auto-authenticates the owner; verified live (session/documents/dashboard 200 without login). Default off; CSRF stays on.
 - Default upload limits raised and verified: 50 MB/image, 100 MB/PDF, 500 MB/request, 300 pages; Nginx upload locations allow 500 MB.
 - Frontend unit tests: **7 passed**.
