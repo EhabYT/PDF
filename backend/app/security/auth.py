@@ -62,8 +62,20 @@ def set_session_cookie(response, token: str):
     response.set_cookie(settings.cookie_name, token, httponly=True, secure=settings.cookie_secure_effective, samesite=settings.cookie_samesite_effective, max_age=settings.session_hours * 3600, path="/")
 
 
+def header_session_enabled() -> bool:
+    """Cookie-less session transport, only for the opt-in no-login mode."""
+    return bool(settings.cookie_fallback_header and settings.auth_disabled)
+
+
+def session_token(request: Request) -> str:
+    token = request.cookies.get(settings.cookie_name, "")
+    if not token and header_session_enabled():
+        token = request.headers.get("x-session-token", "")
+    return token
+
+
 def current_session(request: Request, response: Response, db: DbSession = Depends(get_db)) -> tuple[User, Session]:
-    token = request.cookies.get(settings.cookie_name)
+    token = session_token(request)
     row = db.get(Session, token_hash(token)) if token else None
     valid = bool(row and not row.revoked and row.expires_at > now() and row.last_seen >= now() - timedelta(minutes=settings.session_idle_minutes))
     if not valid and settings.auth_disabled:
@@ -81,12 +93,14 @@ def current_session(request: Request, response: Response, db: DbSession = Depend
                 db.commit()
                 request.state.owner = owner
                 request.state.session = row
+                request.state.session_token = token
                 return owner, row
             token = create_session(db, owner, request)
             set_session_cookie(response, token)
             row = db.get(Session, token_hash(token))
             request.state.owner = owner
             request.state.session = row
+            request.state.session_token = token
             return owner, row
     if not valid:
         raise AppError("unauthorized", "Your session has expired. Please sign in again.", 401)
@@ -97,6 +111,7 @@ def current_session(request: Request, response: Response, db: DbSession = Depend
     db.commit()
     request.state.owner = user
     request.state.session = row
+    request.state.session_token = token
     return user, row
 
 

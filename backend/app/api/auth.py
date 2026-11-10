@@ -19,9 +19,16 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.get("/session")
 def session_info(request: Request, response: Response, db: Session = Depends(get_db)):
+    from app.security.auth import header_session_enabled
     try:
         user, session = current_session(request, response, db)
-        return {"authenticated": True, "auth_disabled": settings.auth_disabled, "user": {"username": user.username, "totp_enabled": user.totp_enabled}, "csrf_token": session.csrf_token, "app_name": get_settings(db, user.id)["app_name"], "expires_at": session.expires_at.isoformat() + "Z"}
+        payload = {"authenticated": True, "auth_disabled": settings.auth_disabled, "user": {"username": user.username, "totp_enabled": user.totp_enabled}, "csrf_token": session.csrf_token, "app_name": get_settings(db, user.id)["app_name"], "expires_at": session.expires_at.isoformat() + "Z"}
+        if header_session_enabled():
+            # Opt-in cookie-less transport (auth_disabled only): the browser in a
+            # sandboxed cross-site iframe cannot store cookies, so hand it the
+            # opaque token to echo back. CSRF is still required on mutations.
+            payload["session_token"] = getattr(request.state, "session_token", "")
+        return payload
     except AppError:
         csrf = request.cookies.get("omnifix_csrf") or secrets.token_urlsafe(32)
         response.set_cookie("omnifix_csrf", csrf, httponly=False, secure=settings.cookie_secure_effective, samesite=settings.cookie_samesite_effective, max_age=3600, path="/")

@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     # enforced automatically below. CSRF token + Origin checks stay enabled.
     cookie_samesite: str = "strict"
     cookie_name: str = "omnifix_session"
+    # Opt-in escape hatch for environments where the browser refuses to store
+    # cookies (sandboxed cross-site preview iframes with an opaque origin, some
+    # kiosk/embed widgets). When true, the SPA returns its session token in an
+    # X-Session-Token header and the API accepts that instead of the cookie.
+    # The CSRF token is still required on every mutation and the token is still
+    # obtained through the normal session endpoint, so this adds no new secret
+    # beyond what the browser already holds. Honoured only when auth_disabled
+    # (no-login mode); ignored otherwise.
+    cookie_fallback_header: bool = False
     session_hours: int = 12
     session_idle_minutes: int = 60
     allowed_origins: str = ""

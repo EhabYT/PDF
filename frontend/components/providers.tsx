@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { api, post, setCsrf } from '@/lib/api';
+import { api, post, setCsrf, setSessionToken } from '@/lib/api';
 import { translate } from '@/lib/i18n';
 import type { SessionInfo, Prefs } from '@/lib/types';
 import { AppShell } from './shell';
@@ -17,7 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const notify = useCallback((message: string, error = false) => { const id = Date.now() + Math.random(); setToasts(t => [...t, { id, message, error }]); setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5500); }, []);
-  const refresh = useCallback(async () => { const s = await api<SessionInfo>('/api/auth/session'); setCsrf(s.csrf_token); setSession(s); if (s.authenticated) { try { setPrefs(await api<Prefs>('/api/settings')); } catch { setPrefs(null); } } else setPrefs(null); }, []);
+  const refresh = useCallback(async () => { const s = await api<SessionInfo>('/api/auth/session'); setCsrf(s.csrf_token); setSessionToken(s.session_token); setSession(s); if (s.authenticated) { try { setPrefs(await api<Prefs>('/api/settings')); } catch { setPrefs(null); } } else setPrefs(null); }, []);
   const refreshPrefs = useCallback(async () => { setPrefs(await api<Prefs>('/api/settings')); }, []);
   useEffect(() => { refresh().catch(() => notify('Could not reach the private server. Check your connection.', true)).finally(() => setLoading(false)); if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') navigator.serviceWorker.register('/sw.js').catch(() => {}); }, [refresh, notify]);
   useEffect(() => {

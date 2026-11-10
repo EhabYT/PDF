@@ -1,10 +1,21 @@
 let csrf = '';
+// Opt-in cookie-less transport. Some embedded hosts (sandboxed cross-site
+// preview iframes) refuse to store cookies at all, so the HttpOnly session
+// cookie never arrives and every mutation fails CSRF. When the server enables
+// it, we hold the opaque session token in memory and echo it back per request.
+let sessionToken = '';
 export function setCsrf(token: string) { csrf = token; }
+export function setSessionToken(token?: string) { sessionToken = token || ''; }
+function authHeaders(headers: Headers) {
+  if (sessionToken) headers.set('X-Session-Token', sessionToken);
+  return headers;
+}
 async function refreshCsrf(): Promise<boolean> {
   try {
     const r = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
     if (!r.ok) return false;
     const s = await r.json();
+    if (s.session_token !== undefined) setSessionToken(s.session_token);
     if (s.csrf_token) { csrf = s.csrf_token; return true; }
   } catch { /* ignore */ }
   return false;
@@ -13,6 +24,7 @@ export class ApiError extends Error { constructor(public code: string, message: 
 export async function api<T = any>(path: string, options: RequestInit = {}, retried = false): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json');
+  authHeaders(headers);
   if (!['GET', 'HEAD'].includes(options.method || 'GET')) headers.set('X-CSRF-Token', csrf);
   const response = await fetch(path, { ...options, headers, credentials: 'same-origin', cache: 'no-store' });
   if (!response.ok) {
@@ -36,6 +48,7 @@ export function uploadFiles(files: File[], combine: boolean, onProgress: (n: num
       const xhr = new XMLHttpRequest(); const form = new FormData();
       files.forEach(f => form.append('files', f)); form.append('combine', String(combine));
       xhr.open('POST', endpoint); xhr.withCredentials = true; xhr.setRequestHeader('X-CSRF-Token', csrf);
+      if (sessionToken) xhr.setRequestHeader('X-Session-Token', sessionToken);
       xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round(e.loaded / e.total * 100)); };
       xhr.onload = () => {
         try {
@@ -56,4 +69,4 @@ export function bytes(value: number) { if (value < 1024) return `${value} B`; if
 export function date(value: string) { return new Date(value.endsWith('Z') ? value : value + 'Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); }
 export function dateTime(value: string) { return new Date(value.endsWith('Z') ? value : value + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 export async function waitForJob(id: string, onUpdate?: (j: any) => void) { for (;;) { const job = await api(`/api/jobs/${id}`); onUpdate?.(job); if (['completed', 'failed', 'cancelled'].includes(job.status)) return job; await new Promise(r => setTimeout(r, 900)); } }
-export async function downloadUrl(url: string, filename?: string) { const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new ApiError('download_failed', 'Download failed or the export has expired.', response.status); const blob = await response.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename || url.split('/').pop() || 'download'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
+export async function downloadUrl(url: string, filename?: string) { const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', headers: authHeaders(new Headers()) }); if (!response.ok) throw new ApiError('download_failed', 'Download failed or the export has expired.', response.status); const blob = await response.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename || url.split('/').pop() || 'download'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }

@@ -19,7 +19,7 @@ if settings.auth_disabled:
     log.warning("AUTH_DISABLED=true: the sign-in page is removed and the owner is auto-authenticated. Anyone who can reach this URL has full owner access. Only run this behind Cloudflare Access, a VPN, or a trusted private network.")
 app = FastAPI(title="OmniFix Private Scanner API", version="1.0.0", docs_url="/api/docs" if settings.environment != "production" else None, redoc_url=None, openapi_url="/api/openapi.json" if settings.environment != "production" else None)
 if settings.origins:
-    app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token"])
+    app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token", "X-Session-Token"])
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=[x.strip() for x in settings.trusted_hosts.split(",")])
 
 
@@ -36,13 +36,14 @@ async def private_security(request: Request, call_next):
             return JSONResponse({"error": {"code": "origin_required", "message": "A same-origin browser request is required."}}, status_code=403)
         if request.url.path.startswith("/api/") and request.url.path != "/api/auth/login":
             supplied = request.headers.get("x-csrf-token", "")
-            expected = getattr(getattr(request.state, "session", None), "csrf_token", "")
-            # Dependencies run after middleware; validate against the opaque session cookie here.
+            # Dependencies run after middleware; resolve the session token here.
+            # Use the same helper as current_session so the two can never drift
+            # (cookie first, opt-in X-Session-Token fallback for cookie-less hosts).
             from app.core.database import SessionLocal
-            from app.security.auth import token_hash
+            from app.security.auth import token_hash, session_token
             from app.models import Session
-            token = request.cookies.get(settings.cookie_name, "")
             with SessionLocal() as db:
+                token = session_token(request)
                 row = db.get(Session, token_hash(token)) if token else None
                 expected = row.csrf_token if row and not row.revoked else ""
             if not expected or not supplied or not secrets.compare_digest(expected, supplied):

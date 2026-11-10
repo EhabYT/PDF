@@ -1,5 +1,5 @@
 /* Public shell only. Never cache API responses, cookies or private documents. */
-const CACHE = 'omnifix-shell-v2';
+const CACHE = 'omnifix-shell-v3';
 const SHELL = ['/offline.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

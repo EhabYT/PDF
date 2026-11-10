@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.10 — 2026-11-08
+- Fixed the last remaining cause of "Security token missing or invalid": some embedded hosts (sandboxed cross-site preview iframes with an **opaque origin**) refuse to store cookies **at all**, so no `SameSite` setting could ever deliver the session cookie and every upload/save failed. Symptom: a new session row on nearly every request (66 accumulated).
+- Added `COOKIE_FALLBACK_HEADER` (default `false`): an opt-in, **no-login-mode-only** transport where `GET /api/auth/session` returns the opaque session token and the SPA echoes it in `X-Session-Token`. The CSRF token is still required on every mutation, so no new secret is exposed beyond what the browser already holds, and cookie storage is never weakened.
+- Middleware and `current_session` now share one `session_token()` resolver so the CSRF check and dependency can never disagree. CORS allows `X-Session-Token`. Download URLs send it too.
+- Ignored entirely when `AUTH_DISABLED=false`; the token is never returned in normal login deployments. Service worker cache bumped to `v3`.
+- Tests: backend+engine **51 passed**, including `test_header_session_transport_opt_in`, `test_header_transport_disabled_by_default`, `test_header_transport_requires_no_login_mode`. Verified live with a browser storing **zero cookies**: session 200, upload **202**, settings PATCH 200, delete 200, 0 documents left.
+
 ## 1.0.9 — 2026-11-08
 - Fixed the persistent "Security token missing or invalid" on uploads/mutations in the embedded preview. Root cause: the session cookie was hard-coded `SameSite=Strict`, which browsers **drop on cross-site iframe API requests**, so the CSRF middleware never received the session cookie and rejected every `POST`/`PATCH`/`DELETE` (a new session was auto-provisioned on each request — 59 rows observed).
 - Added `COOKIE_SAMESITE` (`strict` default / `lax` / `none`). `none` is for cross-site iframe hosting only and automatically forces `Secure` (browsers require HTTPS for `SameSite=None`). CSRF token + Origin checks are unchanged; the secure `strict` default is untouched. Preview `.env` now uses `COOKIE_SAMESITE=none` + `COOKIE_SECURE=true`.

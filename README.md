@@ -224,7 +224,14 @@ Set `AUTH_DISABLED=true` in `.env` to skip the OmniFix login page and auto-authe
 
 ### Embedded / cross-site previews ("Security token missing or invalid")
 
-If the app is shown inside a **cross-site iframe** (for example a hosted live preview), browsers drop `SameSite=Strict` cookies on the iframe's API requests. Pages still load, but every upload/save is rejected with *"Security token missing or invalid"* because the CSRF check never receives the session cookie. For that hosting style only, set `COOKIE_SAMESITE=none` and serve over HTTPS (`COOKIE_SECURE=true` is then enforced automatically). Normal same-origin deployments should keep the default `COOKIE_SAMESITE=strict`. The CSRF token and Origin checks stay enabled either way.
+If the app is shown inside a **cross-site iframe** (for example a hosted live preview), the browser may refuse to send — or even store — the session cookie. Pages still load, but every upload/save is rejected with *"Security token missing or invalid"*, and the server accumulates a fresh session on nearly every request.
+
+Two opt-in settings cover this, in order of preference:
+
+1. `COOKIE_SAMESITE=none` (+ `COOKIE_SECURE=true`, forced automatically) — for iframes that accept third-party cookies over HTTPS. Normal same-origin deployments should keep the default `strict`.
+2. `COOKIE_FALLBACK_HEADER=true` — only for sandboxed iframes with an opaque origin where **no cookie can be stored at all**. The SPA then receives the opaque session token from `GET /api/auth/session` and echoes it in `X-Session-Token`. It is honoured **only** when `AUTH_DISABLED=true`, and the CSRF token is still required on every mutation, so it exposes no credential the browser did not already hold.
+
+Neither option weakens the CSRF token or Origin checks. Both default to off.
 
 ## Updating
 

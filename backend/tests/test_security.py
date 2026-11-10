@@ -208,3 +208,48 @@ def test_cookie_samesite_policy(client, monkeypatch):
     # Invalid values fall back to the secure default.
     monkeypatch.setattr(settings, "cookie_samesite", "bogus")
     assert settings.cookie_samesite_effective == "strict"
+
+
+def test_header_session_transport_opt_in(client, monkeypatch):
+    """Cookie-less hosts (sandboxed cross-site iframe preview) must still work."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "cookie_fallback_header", True)
+    info = client.get("/api/auth/session").json()
+    token = info.get("session_token")
+    assert token, "opt-in transport must expose the opaque session token"
+    client.cookies.clear()  # simulate a browser that refuses to store cookies
+    h = {"X-CSRF-Token": info["csrf_token"], "X-Session-Token": token}
+    assert client.get("/api/documents", headers=h).status_code == 200
+    assert client.get("/api/dashboard", headers=h).status_code == 200
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers=h).status_code == 200
+    # CSRF is still mandatory: the header transport does not bypass it.
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"X-Session-Token": token}).status_code == 403
+    client.cookies.clear()
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers={"X-CSRF-Token": info["csrf_token"]}).status_code == 403
+    # A forged/unknown session token carries no CSRF token, so it can never
+    # mutate anything (reads merely re-provision, as no-login mode intends).
+    forged = {**h, "X-Session-Token": "not-a-real-token"}
+    assert client.patch("/api/settings", json={"theme": "dark"}, headers=forged).status_code == 403
+
+
+def test_header_transport_disabled_by_default(client, monkeypatch):
+    """Default deployments must never expose the session token to JavaScript."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "cookie_fallback_header", False)
+    info = client.get("/api/auth/session").json()
+    assert "session_token" not in info
+    # Even in no-login mode the client is never handed the token, so a browser
+    # that cannot store cookies stays broken rather than silently downgrading.
+    client.cookies.clear()
+    assert "session_token" not in client.get("/api/auth/session").json()
+
+
+def test_header_transport_requires_no_login_mode(client, monkeypatch):
+    """The transport is ignored when real login is enforced."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", False)
+    monkeypatch.setattr(settings, "cookie_fallback_header", True)
+    info = client.get("/api/auth/session").json()
+    assert "session_token" not in info
