@@ -14,6 +14,12 @@ services:
       FRONTEND_DIR: /app/frontend/out
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # Session/CSRF cookie policy. Keep strict for normal same-origin use;
+      # 'none' only for cross-site iframe hosting (Secure is then implied).
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-strict}
+      # Opt-in embedded-preview transport (requires AUTH_DISABLED=true).
+      COOKIE_FALLBACK_HEADER: ${COOKIE_FALLBACK_HEADER:-false}
+      ALLOW_OPAQUE_ORIGIN: ${ALLOW_OPAQUE_ORIGIN:-false}
       TRUSTED_HOSTS: ${TRUSTED_HOSTS:-localhost,127.0.0.1}
     volumes:
       - ./storage:/app/storage
@@ -36,6 +42,7 @@ services:
       DATA_DIR: /app/storage
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
       WORKER_MEMORY_MB: ${WORKER_MEMORY_MB:-1200}
+      AUTH_DISABLED: ${AUTH_DISABLED:-false}
     command: ["python", "-m", "app.workers.runner"]
     volumes:
       - ./storage:/app/storage

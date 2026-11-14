@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.14 — 2026-11-08
+- **Docker deployments silently ignored the new cookie/origin settings.** `docker-compose.yml` passed `COOKIE_SECURE` but not `COOKIE_SAMESITE`, `COOKIE_FALLBACK_HEADER` or `ALLOW_OPAQUE_ORIGIN`, so anyone deploying via Compose (the documented production path) could set them in `.env` and see no effect. All three now pass through with secure defaults, and `AUTH_DISABLED` reaches the worker too.
+- Full-app audit pass (every route, page-editing actions, all four export formats, security and storage endpoints) run as a real user through a sandboxed iframe and over the API:
+  - All 8 routes render with no console or page errors and no failed requests.
+  - Document lifecycle verified end-to-end: multi-page upload, reorder, all four rotations, include/exclude (source files preserved), normalized corner editing, detect, reprocess, process-all, add-pages, rename.
+  - All four exports produce valid files: PDF (`%PDF-` header, A4 595.276pt), `images` ZIP, `zip` bundle (PDF + page JPEGs + document.json), `originals` ZIP (byte-identical PNGs).
+  - Correctly rejected as designed: pixel-space corners (must be normalized 0–1), wrong export format names, and concurrent mutations while a job is active (409 job_active — the UI guards this with its busy state).
+- Tests remain **56 passed**; no behavioural regressions found.
+
 ## 1.0.13 — 2026-11-08
 - Fixed two navigation bugs found by driving the real UI in a sandboxed iframe with headless Chromium:
   - **`HEAD` returned 405** on every page route. Next.js issues HEAD when prefetching, so client routing was degraded. The shell route now serves GET and HEAD.
