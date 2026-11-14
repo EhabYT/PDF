@@ -283,3 +283,41 @@ def test_opaque_origin_never_allowed_with_real_login(client, monkeypatch):
     monkeypatch.setattr(settings, "auth_disabled", False)
     monkeypatch.setattr(settings, "allow_opaque_origin", True)
     assert client.patch("/api/settings", json={"theme": "dark"}, headers={"Origin": "null"}).status_code == 403
+
+
+def test_head_requests_served_for_client_routing(client, monkeypatch):
+    """Next.js sends HEAD when prefetching routes; a 405 breaks navigation."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    client.get("/api/auth/session")
+    for path in ("/dashboard/", "/documents/", "/scan/", "/settings/", "/about/"):
+        response = client.head(path)
+        assert response.status_code == 200, f"HEAD {path} -> {response.status_code}"
+
+
+def test_embedded_cors_allows_next_router_headers(monkeypatch):
+    """In an embedded preview every request is preflighted; Next's RSC headers
+    (including next-router-segment-prefetch) must be allowed or navigation dies."""
+    from app.core.config import settings
+    from app.main import cors_configuration
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "allow_opaque_origin", True)
+    config = cors_configuration()
+    assert "null" in config["allow_origins"]
+    assert config["allow_private_network"] is True
+    allowed = {h.lower() for h in config["allow_headers"]}
+    for header in ("rsc", "next-router-prefetch", "next-router-segment-prefetch", "next-url", "x-csrf-token", "x-session-token"):
+        assert header in allowed, f"{header} missing from {sorted(allowed)}"
+    assert "HEAD" in config["allow_methods"]
+
+
+def test_embedded_cors_off_by_default(monkeypatch):
+    """No embedded allowances unless the no-login embed mode is explicitly on."""
+    from app.core.config import settings
+    from app.main import cors_configuration
+    monkeypatch.setattr(settings, "auth_disabled", True)
+    monkeypatch.setattr(settings, "allow_opaque_origin", False)
+    config = cors_configuration()
+    assert "null" not in config["allow_origins"]
+    assert config["allow_private_network"] is False
+    assert all("next" not in h.lower() and h.lower() != "rsc" for h in config["allow_headers"])

@@ -18,13 +18,37 @@ log = logging.getLogger("omnifix.api")
 if settings.auth_disabled:
     log.warning("AUTH_DISABLED=true: the sign-in page is removed and the owner is auto-authenticated. Anyone who can reach this URL has full owner access. Only run this behind Cloudflare Access, a VPN, or a trusted private network.")
 app = FastAPI(title="OmniFix Private Scanner API", version="1.0.0", docs_url="/api/docs" if settings.environment != "production" else None, redoc_url=None, openapi_url="/api/openapi.json" if settings.environment != "production" else None)
-_cors_origins = list(settings.origins)
-# Opt-in: sandboxed iframes without allow-same-origin have the opaque origin
-# "null". Required only for the cookie-less embedded-preview transport.
-if settings.allow_opaque_origin and settings.auth_disabled:
-    _cors_origins.append("null")
-if _cors_origins:
-    app.add_middleware(CORSMiddleware, allow_origins=_cors_origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "X-CSRF-Token", "X-Session-Token"])
+# Next.js client-side navigation fetches the RSC payload with custom headers.
+# When the app is embedded (opaque origin) the browser preflights those GETs, so
+# they must be allowed or every link prefetch fails with a CORS error.
+_RSC_HEADERS = ["RSC", "Next-Router-State-Tree", "Next-Router-Prefetch", "Next-Router-Segment-Prefetch", "Next-Url"]
+
+
+def cors_configuration() -> dict:
+    """CORS settings for the current deployment mode.
+
+    Extracted so the embedded-preview behaviour can be unit-tested: middleware is
+    built once at import, so monkeypatching settings afterwards would not rebuild it.
+    """
+    embedded = bool(settings.allow_opaque_origin and settings.auth_disabled)
+    origins = list(settings.origins)
+    if embedded:
+        # Sandboxed iframes without allow-same-origin have the opaque origin "null".
+        origins.append("null")
+    return {
+        "allow_origins": origins,
+        "allow_credentials": True,
+        "allow_methods": ["GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "X-CSRF-Token", "X-Session-Token", *(_RSC_HEADERS if embedded else [])],
+        # Private Network Access: an opaque-origin document fetching a loopback
+        # address is treated as public -> local, so the preflight must acknowledge
+        # it or Chromium blocks the fetch ("preflight has no ok status").
+        "allow_private_network": embedded,
+    }
+
+
+if cors_configuration()["allow_origins"]:
+    app.add_middleware(CORSMiddleware, **cors_configuration())
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=[x.strip() for x in settings.trusted_hosts.split(",")])
 
 
@@ -105,6 +129,7 @@ for router in [auth.router, documents.router, pages.router, jobs.router, exports
 
 
 @app.get("/{path:path}", include_in_schema=False)
+@app.head("/{path:path}", include_in_schema=False)
 def shell(path: str):
     if path.startswith("api/"):
         return JSONResponse({"error": {"code": "not_found", "message": "Endpoint not found."}}, status_code=404)

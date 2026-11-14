@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.13 — 2026-11-08
+- Fixed two navigation bugs found by driving the real UI in a sandboxed iframe with headless Chromium:
+  - **`HEAD` returned 405** on every page route. Next.js issues HEAD when prefetching, so client routing was degraded. The shell route now serves GET and HEAD.
+  - **Embedded CORS was incomplete.** In an opaque-origin embed every request is preflighted, so (a) Next.js RSC headers were rejected — including `next-router-segment-prefetch`, which I had missed — killing link prefetch, and (b) **Private Network Access** preflights (`Access-Control-Request-Private-Network`, since the embed fetches a loopback address) returned **400** because Starlette needs `allow_private_network`. Both now enabled under the same `ALLOW_OPAQUE_ORIGIN` + `AUTH_DISABLED` opt-in via `allow_private_network=True`.
+- Extracted `cors_configuration()` from `main.py` so the embedded-preview CORS policy is unit-testable (middleware is built once at import, so settings monkeypatching could not verify it).
+- Tests: **56 passed**, incl. `test_embedded_cors_allows_next_router_headers`, `test_embedded_cors_off_by_default`, `test_head_requests_served_for_client_routing`.
+- Verified in the sandboxed iframe: **no CORS or console errors**, `RESULT {"rsc":"200 cors","plain":"200 cors","api":"200 cors"}`, upload 202, document page opens.
+
+## 1.0.12 — 2026-11-08
+- Added `scripts/preflight.sh` and wired it into `scripts/setup.sh` and `scripts/start.sh`. Missing **system** packages (tesseract + `deu`/`eng`/`ara`, libmagic) previously caused OCR/Smart Document Naming to fail silently at job time; setup and start now fail loudly with copy-paste install commands for Debian, Fedora and Alpine. `ALLOW_MISSING_OCR=1` downgrades it to a warning for users who only want scanning.
+- Verified the guard both ways: exits 1 with tesseract absent, exits 0 with `ALLOW_MISSING_OCR=1`, exits 0 when everything is present.
+- Documented in README requirements.
+- Re-verified end-to-end after a clean environment rebuild: upload → **202**, pipeline completes, OCR naming produces `Mietvertrag_Hausverwaltung_Schmidt_GmbH_03-2026` (German, "Rental Agreements"), original/processed/thumbnail all **200**.
+
 ## 1.0.11 — 2026-11-08
 - Fixed the **real** cause of the embedded-preview failures, found by reproducing the host with a real browser: a sandboxed iframe **without `allow-same-origin` has the opaque origin `"null"`**. In that context `document.cookie` and `localStorage` **throw**, and the browser treats every request as cross-origin, so `/api/*` responses arrive at the server but are withheld from JavaScript unless `Access-Control-Allow-Origin: null` is returned. The app therefore fell back to the sign-in page and every mutation failed.
 - Added `ALLOW_OPAQUE_ORIGIN` (default `false`): accepts `Origin: null` in the CSRF/Origin middleware **and** adds `null` to the CORS allowlist. Honoured only when `AUTH_DISABLED=true`; the CSRF token is still mandatory, and any real foreign origin is still rejected.

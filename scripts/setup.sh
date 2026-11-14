@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+bash scripts/preflight.sh
 python3 -m venv .venv
 .venv/bin/pip install -r backend/requirements.lock
 (cd frontend && npm ci --no-audit --no-fund)

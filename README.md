@@ -94,6 +94,8 @@ Ubuntu/Debian OCR packages:
 sudo apt-get install tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara libmagic1
 ```
 
+`scripts/setup.sh` and `scripts/start.sh` run `scripts/preflight.sh` first and **refuse to start** if these OS packages are missing, because OCR/Smart Document Naming would otherwise fail silently at job time. To run scanning without OCR anyway, set `ALLOW_MISSING_OCR=1`.
+
 ## Quick start — local development
 
 ```bash
